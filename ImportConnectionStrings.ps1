@@ -21,7 +21,7 @@ $ConnectionStringsHashTable = @{}
 #Add existing connection strings to hash
 foreach ($cs in $Site.SiteConfig.ConnectionStrings)
 {
-	$ConnectionStringsHashTable.Add($cs.Name, @{ Type=$cs.Type ; Value=$cs.ConnectionString })	
+	$ConnectionStringsHashTable.Add($cs.Name, @{ Type=$cs.Type ; Value=$cs.ConnectionString })
 }
 
 #Get connection strings from file to import
@@ -33,8 +33,18 @@ Get-Content $InputFile | Foreach-Object {
 	$connectionStringToImport.ConnectionString = $Connection
 	$connectionStringToImport.Type = $Type
 	
-	$ConnectionStringsHashTable.Add($Name, @{ Type=$Type ; Value=$Connection })
+	$ConnectionStringsHashTable[$Name] = @{ Type=$Type ; Value=$Connection }
 }
+
+#Create array of connection string names that will be slot settings
+$ConnectionStringNamesArray = new-object string[] $ConnectionStringsHashTable.Count
+$count = 0
+foreach ($Key in $ConnectionStringsHashTable.Keys)
+{
+	$ConnectionStringNamesArray[$count] = $Key
+	$count++
+}
+
 
 #Set Production or staging slot connection strings based on $Slot 
 if ($Slot -eq [string]::Empty)
@@ -44,4 +54,5 @@ if ($Slot -eq [string]::Empty)
 else 
 {
 	Set-AzureRmWebAppSlot -ResourceGroupName $ResourceGroupName -Name $SiteName -Slot $Slot -ConnectionStrings $ConnectionStringsHashTable
+	Set-AzureRmWebAppSlotConfigName -ResourceGroupName $ResourceGroupName -Name $SiteName -ConnectionStringNames $ConnectionStringNamesArray
 }

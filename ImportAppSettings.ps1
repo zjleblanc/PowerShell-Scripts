@@ -29,9 +29,13 @@ Get-Content $InputFile | Foreach-Object {
 	$AppSettingsHash[$Key] = $Value
 }
 
-foreach ($key in $AppSettingsHash.Keys)
+#Create array of app setting names that will be slot settings
+$AppSettingNamesArray = new-object string[] $AppSettingsHash.Count
+$count = 0
+foreach ($Key in $AppSettingsHash.Keys)
 {
-	write-host "$($key): $($AppSettingsHash[$key])"
+	$AppSettingNamesArray[$count] = $Key
+	$count++
 }
 
 #Set Production or staging slot app settings based on $Slot 
@@ -42,4 +46,5 @@ if ($Slot -eq [string]::Empty)
 else 
 {
 	Set-AzureRmWebAppSlot -ResourceGroupName $ResourceGroupName -Name $SiteName -Slot $Slot -AppSettings $AppSettingsHash
+	Set-AzureRmWebAppSlotConfigName -ResourceGroupName $ResourceGroupName -Name $SiteName -AppSettingNames $AppSettingNamesArray
 }
